@@ -299,17 +299,16 @@ package MichaelsMagic
 		private function renderAutomaters(): void
 		{
 			renderingAutomaters = true;
-			if (core.ingameStatus != 5 && core.ingameStatus != 14)
+			if (core.ingameStatus == 5 || core.ingameStatus == 14)
 			{
-				return;
-			}
-			for each(var automater:Automater in automaters)
-			{
-				if (automater != null)
+				for each(var automater:Automater in automaters)
 				{
-					if (!automater.isDestroyed)
+					if (automater != null)
 					{
-						GV.vfxEngine.createFloatingText4(automater.pX + 60, automater.pY - 8, "*", 16711696, 16, "center", 0, 0, 0, 0, 8, 0, 125);
+						if (!automater.isDestroyed)
+						{
+							GV.vfxEngine.createFloatingText4(automater.pX + 60, automater.pY - 8, "*", 16711696, 16, "center", 0, 0, 0, 0, 8, 0, 125);
+						}
 					}
 				}
 			}
@@ -325,26 +324,25 @@ package MichaelsMagic
 			{
 				automaters = new Array();
 				automatersEnabled = false;
-				return;
-			}
-			automaters = automaters.filter(filterAutomaters);
-			automaters.sort(sortAutomaters);
-			for each(var automater:Automater in automaters)
-			{
-				if (automater != null)
-				{
-					if (!automater.isDestroyed)
-					{
-						automater.updateAutomater(replaceMode);
-					}
-					else
-					{
-						showMessage("destroyed automater in array");
-					}
-				}
 			}
 			if (automatersEnabled)
 			{
+				automaters = automaters.filter(filterAutomaters);
+				automaters.sort(sortAutomaters);
+				for each(var automater:Automater in automaters)
+				{
+					if (automater != null)
+					{
+						if (!automater.isDestroyed)
+						{
+							automater.updateAutomater(replaceMode);
+						}
+						else
+						{
+							showMessage("destroyed automater in array");
+						}
+					}
+				}
 				var timer:Timer = new Timer(automaterDelay, 1);
 				var func:Function = function(e:Event): void {updateAutomaters(); };
 				timer.addEventListener(TimerEvent.TIMER, func);
@@ -368,8 +366,9 @@ package MichaelsMagic
 			var aTotal:Number = aIsAmp ? aDesiredCostRatio : 1;
 			var bTotal:Number = bIsAmp ? bDesiredCostRatio : 1;
 			aTotal *= bCost; // switched because we want the b cost to make it upgrade a sooner
-			bTotal *= aCost; // if aCost is higher we want it to upgrade b because be is worse gem
-			return bTotal - aTotal;
+			bTotal *= aCost; // if aCost is higher we want it to upgrade b because b is worse gem
+			showMessage("" + aDesiredCostRatio);
+			return Math.max(Math.min(bTotal - aTotal, 1), -1);
 		}
 		
 		private function filterAutomaters(element:*, index:int, arr:Array): Boolean
