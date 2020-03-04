@@ -439,23 +439,17 @@ package MichaelsMagic
 			}
 			else if(pE.keyCode == this.configuration["Hotkeys"]["MichaelsMagic: i"])
 			{
-				if (pE.altKey)
-				{
-					core.changeMana( 1000000000 * 1000000000, false, true);
-				}
-				else
-				{
-					
-				}
 				event.eventArgs.continueDefault = false;
 			}
 			else if (pE.keyCode == this.configuration["Hotkeys"]["MichaelsMagic: ;"])
 			{
+				/*
 				automatersIndex++;
 				if (automatersIndex >= automaters.length)
 				{
 					showMessage("Creating a new automaterGroup!");
 				}
+				*/
 				event.eventArgs.continueDefault = false;
 			}
 			else if (pE.keyCode == this.configuration["Hotkeys"]["MichaelsMagic: '"])
