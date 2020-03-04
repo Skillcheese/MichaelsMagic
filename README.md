@@ -12,7 +12,7 @@ all the files will be in the game's Local Store folder
 **If there is no `Mods` folder**, you need to first install Bezel Mod Loader (link above).
 
 # Uninstalling the mod
-Delete `Gemsmith-x.x-for-y.y.y.swf` from the `Mods` folder.
+Delete `MichaelsMagic-x.x-for-y.y.y.swf` from the `Mods` folder.
 
 ## Releases
 [Link to the latest release](https://github.com/Skillcheese/MichaelsMagic/releases/latest)
