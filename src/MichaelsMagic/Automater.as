@@ -59,7 +59,7 @@ package MichaelsMagic
 			return false;
 		}
 		
-		public function updateAutomater(replace:Boolean): void
+		public function updateAutomater(replace:Boolean, actuallyUpdate:Boolean): void
 		{
 			if (isDestroyed)
 			{
@@ -76,6 +76,10 @@ package MichaelsMagic
 				var buildingGem:Object = building.insertedGem;
 				if (buildingGem != null)
 				{
+					if (!actuallyUpdate)
+					{
+						return;
+					}
 					if (replace)
 					{
 						var gem:Object = core.inventorySlots[2];
@@ -226,10 +230,10 @@ package MichaelsMagic
 		{
 			if (building != null)
 			{
-				var Trap:Class = getDefinitionByName("com.giab.games.gcfw.entity.Trap") as Class;
-				var Tower:Class = getDefinitionByName("com.giab.games.gcfw.entity.Tower") as Class;
-				var Amplifier:Class = getDefinitionByName("com.giab.games.gcfw.entity.Amplifier") as Class;
-				var Lantern:Class = getDefinitionByName("com.giab.games.gcfw.entity.Lantern") as Class;
+				var Trap:Class = getDefinitionByName("com.giab.games.gcfw.steam.entity.Trap") as Class;
+				var Tower:Class = getDefinitionByName("com.giab.games.gcfw.steam.entity.Tower") as Class;
+				var Amplifier:Class = getDefinitionByName("com.giab.games.gcfw.steam.entity.Amplifier") as Class;
+				var Lantern:Class = getDefinitionByName("com.giab.games.gcfw.steam.entity.Lantern") as Class;
 				if (building is Trap)
 				{
 					return BuildingType.TRAP;

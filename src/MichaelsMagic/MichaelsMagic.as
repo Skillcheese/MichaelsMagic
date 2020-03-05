@@ -332,10 +332,7 @@ package MichaelsMagic
 				{
 					if (!automater.isDestroyed)
 					{
-						if (automatersEnabled)
-						{
-							automater.updateAutomater(replaceMode);
-						}
+						automater.updateAutomater(replaceMode, automatersEnabled);
 					}
 					else
 					{
