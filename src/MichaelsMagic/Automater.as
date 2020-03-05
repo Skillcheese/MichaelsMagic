@@ -1,6 +1,7 @@
 package MichaelsMagic 
 {
 	import MichaelsMagic.MichaelsMagic;
+	import flash.utils.getDefinitionByName;
 	/**
 	 * ...
 	 * @author Skillcheese
@@ -72,15 +73,7 @@ package MichaelsMagic
 			var building:Object = core.buildingAreaMatrix[y][x];
 			if (building != null)
 			{
-				var buildingGem:Object = null;
-				try
-				{
-					buildingGem = building.insertedGem;
-				}
-				catch (error:Error)
-				{
-					
-				}
+				var buildingGem:Object = building.insertedGem;
 				if (buildingGem != null)
 				{
 					if (replace)
@@ -101,6 +94,10 @@ package MichaelsMagic
 									{
 										var gemToInsert:Object = core.inventorySlots[numSlot];
 										core.spellCaster.castRefundGem(buildingGem);
+										if (core.gems.indexOf(buildingGem != -1))
+										{
+											core.gems.splice(core.gems.indexOf(buildingGem), 1);
+										}
 										core.inventorySlots[numSlot] = null;
 										building.insertGem(gemToInsert);
 									}
@@ -229,33 +226,25 @@ package MichaelsMagic
 		{
 			if (building != null)
 			{
-				for each(var trap:Object in core.traps)
+				var Trap:Class = getDefinitionByName("com.giab.games.gcfw.entity.Trap") as Class;
+				var Tower:Class = getDefinitionByName("com.giab.games.gcfw.entity.Tower") as Class;
+				var Amplifier:Class = getDefinitionByName("com.giab.games.gcfw.entity.Amplifier") as Class;
+				var Lantern:Class = getDefinitionByName("com.giab.games.gcfw.entity.Lantern") as Class;
+				if (building is Trap)
 				{
-					if (building == trap)
-					{
-						return BuildingType.TRAP;
-					}
+					return BuildingType.TRAP;
 				}
-				for each(var tower:Object in core.towers)
+				if (building is Tower)
 				{
-					if (building == tower)
-					{
-						return BuildingType.TOWER;
-					}
+					return BuildingType.TOWER;
 				}
-				for each(var amplifier:Object in core.amplifiers)
+				if (building is Amplifier)
 				{
-					if (building == amplifier)
-					{
-						return BuildingType.AMPLIFIER;
-					}
+					return BuildingType.AMPLIFIER;
 				}
-				for each(var lantern :Object in core.lanterns)
+				if (building is Lantern)
 				{
-					if (building == lantern)
-					{
-						return BuildingType.LANTERN;
-					}
+					return BuildingType.LANTERN;
 				}
 			}
 			return -1;

@@ -82,7 +82,6 @@ package MichaelsMagic
 			
 			prepareFoldersAndLogger();
 			this.configuration = createDefaultConfiguration();
-			this.defaultHotkeys = createDefaultConfiguration().Hotkeys;
 			this.infoPanelState = InfoPanelState.MICHAELSMAGIC;
 			
 			addEventListeners();
@@ -133,7 +132,6 @@ package MichaelsMagic
 				{
 					slotStream.open(slotFile, FileMode.READ);
 					slotJSON = slotStream.readUTFBytes(slotStream.bytesAvailable);
-					slotObject = JSON.parse(slotJSON);
 					slotObject = JSON.parse(slotJSON);
 					
 					logger.log("LoadConfiguration", "Loaded slot!");
@@ -273,6 +271,7 @@ package MichaelsMagic
 								if (!renderingAutomaters)
 								{
 									renderAutomaters();
+									updateAutomaters();
 								}
 							}
 						}
@@ -325,29 +324,29 @@ package MichaelsMagic
 				automaters = new Array();
 				automatersEnabled = false;
 			}
-			if (automatersEnabled)
+			automaters = automaters.filter(filterAutomaters);
+			automaters.sort(sortAutomaters);
+			for each(var automater:Automater in automaters)
 			{
-				automaters = automaters.filter(filterAutomaters);
-				automaters.sort(sortAutomaters);
-				for each(var automater:Automater in automaters)
+				if (automater != null)
 				{
-					if (automater != null)
+					if (!automater.isDestroyed)
 					{
-						if (!automater.isDestroyed)
+						if (automatersEnabled)
 						{
 							automater.updateAutomater(replaceMode);
 						}
-						else
-						{
-							showMessage("destroyed automater in array");
-						}
+					}
+					else
+					{
+						showMessage("destroyed automater in array");
 					}
 				}
-				var timer:Timer = new Timer(automaterDelay, 1);
-				var func:Function = function(e:Event): void {updateAutomaters(); };
-				timer.addEventListener(TimerEvent.TIMER, func);
-				timer.start();
 			}
+			var timer:Timer = new Timer(automaterDelay, 1);
+			var func:Function = function(e:Event): void {updateAutomaters(); };
+			timer.addEventListener(TimerEvent.TIMER, func);
+			timer.start();
 		}
 		
 		private function sortAutomaters(a:Automater, b:Automater): int
@@ -430,7 +429,6 @@ package MichaelsMagic
 					{
 						showMessage("Automaters turned on!");
 						automatersEnabled = true;
-						updateAutomaters();
 					}
 				}
 				event.eventArgs.continueDefault = false;
@@ -478,14 +476,6 @@ package MichaelsMagic
 			}
 			else
 			{
-				for(var name:String in this.defaultHotkeys)
-				{
-					if(this.defaultHotkeys[name] == pE.keyCode)
-					{
-						pE.keyCode = this.configuration["Hotkeys"][name] || 0;
-						break;
-					}
-				}
 			} 
 		}
 		
@@ -530,31 +520,6 @@ package MichaelsMagic
 				logger.log("PrepareFolders", "Creating ./MichaelsMagic");
 				storageFolder.createDirectory();
 			}
-
-			var fwgc:File = storage.resolvePath("FWGC");
-			if(!fwgc.isDirectory)
-				return;
-
-			logger.log("PrepareFolders", "Moving stuff from ./FWGC");
-			var oldConfig:File = storage.resolvePath("FWGC/FWGC_config.json");
-			if(oldConfig.exists)
-			{
-				var oldCStream:FileStream = new FileStream()
-				oldCStream.open(oldConfig, FileMode.READ);
-				var oldJSON:String = oldCStream.readUTFBytes(oldCStream.bytesAvailable);
-				oldCStream.close();
-				var pattern:RegExp = /FWGC/g;
-				oldJSON = oldJSON.replace(pattern,"MichaelsMagic");
-				
-				oldCStream.open(oldConfig, FileMode.WRITE);
-				oldCStream.writeUTFBytes(oldJSON);
-				oldCStream.close();
-				oldConfig.copyTo(storageFolder.resolvePath("MichaelsMagic_config.json"), true);
-				logger.log("PrepareFolders", "Moved config");
-			}
-
-			fwgc.moveToTrash();
-			logger.log("PrepareFolders", "Moved ./FWGC to trash!");
 		}
 		
 		public function reloadEverything(): void
