@@ -367,7 +367,6 @@ package MichaelsMagic
 			var bTotal:Number = bIsAmp ? bDesiredCostRatio : 1;
 			aTotal *= bCost; // switched because we want the b cost to make it upgrade a sooner
 			bTotal *= aCost; // if aCost is higher we want it to upgrade b because b is worse gem
-			showMessage("" + aDesiredCostRatio);
 			return Math.max(Math.min(bTotal - aTotal, 1), -1);
 		}
 		
