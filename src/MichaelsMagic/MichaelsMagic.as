@@ -325,18 +325,32 @@ package MichaelsMagic
 				automatersEnabled = false;
 			}
 			automaters = automaters.filter(filterAutomaters);
-			automaters.sort(sortAutomaters);
-			for each(var automater:Automater in automaters)
+			var finished:Boolean = automaters.length == 0;
+			while (!finished)
 			{
-				if (automater != null)
+				if (replaceMode || !automatersEnabled)
 				{
-					if (!automater.isDestroyed)
+					finished = true;
+				}
+				automaters.sort(sortAutomaters);
+				for each(var automater:Automater in automaters)
+				{
+					if (automater != null)
 					{
-						automater.updateAutomater(replaceMode, automatersEnabled);
-					}
-					else
-					{
-						showMessage("destroyed automater in array");
+						if (!automater.isDestroyed)
+						{
+							if (core.getMana() < automater.getGemCost() + core.gemCombiningManaCost.g())
+							{
+								finished = true;
+								break;
+							}
+							automater.updateAutomater(replaceMode, automatersEnabled);
+							
+						}
+						else
+						{
+							showMessage("destroyed automater in array");
+						}
 					}
 				}
 			}
