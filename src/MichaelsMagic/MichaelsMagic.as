@@ -27,9 +27,9 @@ package MichaelsMagic
 	// The loader also requires a parameterless constructor (AFAIK), so we also have a .Bind method to bind our class to the game
 	public class MichaelsMagic extends MovieClip
 	{
-		public const VERSION:String = "1.0";
-		public const GAME_VERSION:String = "1.0.21";
-		public const BEZEL_VERSION:String = "0.1.0";
+		public const VERSION:String = "1.1";
+		public const GAME_VERSION:String = "1.1.0a";
+		public const BEZEL_VERSION:String = "0.2.1";
 		public const MOD_NAME:String = "MichaelsMagic";
 		
 		private var gameObjects:Object;
