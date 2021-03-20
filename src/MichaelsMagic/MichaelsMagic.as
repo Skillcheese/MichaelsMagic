@@ -27,7 +27,7 @@ package MichaelsMagic
 	// The loader also requires a parameterless constructor (AFAIK), so we also have a .Bind method to bind our class to the game
 	public class MichaelsMagic extends MovieClip
 	{
-		public const VERSION:String = "1.1";
+		public const VERSION:String = "1.2";
 		public const GAME_VERSION:String = "1.1.0a";
 		public const BEZEL_VERSION:String = "0.2.1";
 		public const MOD_NAME:String = "MichaelsMagic";
@@ -48,9 +48,7 @@ package MichaelsMagic
 		internal static var storage:File;
 
 		private var configuration:Object;
-		private var defaultHotkeys:Object;
 		private var infoPanelState:int;
-		private var activeBitmaps:Object;
 		
 		private var automaters:Array = new Array();
 		private var automatersEnabled:Boolean = false;
@@ -58,8 +56,6 @@ package MichaelsMagic
 		private var automaterDelay:int = 125;
 		private var automatersIndex:int = 0;
 		private var replaceMode:Boolean = false;
-		private var talismanRune:int = -1;
-		private var filterCost:int = 5;
 		
 		// Parameterless constructor for flash.display.Loader
 		public function MichaelsMagic()
@@ -167,43 +163,13 @@ package MichaelsMagic
 		{
 			var config:Object = new Object();
 			config["Hotkeys"] = new Object();
-			config["Hotkeys"]["Throw gem bombs"] = 66;
-			config["Hotkeys"]["Build tower"] = 84;
-			config["Hotkeys"]["Build lantern"] = 76;
-			config["Hotkeys"]["Build pylon"] = 80;
-			config["Hotkeys"]["Build trap"] = 82;
-			config["Hotkeys"]["Build wall"] = 87;
-			config["Hotkeys"]["Combine gems"] = 71;
-			config["Hotkeys"]["Switch time speed"] = 81;
-			config["Hotkeys"]["Pause time"] = 32;
-			config["Hotkeys"]["Start next wave"] = 78;
-			config["Hotkeys"]["Destroy gem for mana"] = 88;
-			config["Hotkeys"]["Drop gem to inventory"] = 9;
-			config["Hotkeys"]["Duplicate gem"] = 68;
-			config["Hotkeys"]["Upgrade gem"] = 85;
 			config["Hotkeys"]["Show/hide info panels"] = 190;
-			config["Hotkeys"]["Cast freeze strike spell"] = 49;
-			config["Hotkeys"]["Cast whiteout strike spell"] = 50;
-			config["Hotkeys"]["Cast ice shards strike spell"] = 51;
-			config["Hotkeys"]["Cast bolt enhancement spell"] = 52;
-			config["Hotkeys"]["Cast beam enhancement spell"] = 53;
-			config["Hotkeys"]["Cast barrage enhancement spell"] = 54;
-			config["Hotkeys"]["Create Critical Hit gem"] = 100;
-			config["Hotkeys"]["Create Mana Leeching gem"] = 101;
-			config["Hotkeys"]["Create Bleeding gem"] = 102;
-			config["Hotkeys"]["Create Armor Tearing gem"] = 97;
-			config["Hotkeys"]["Create Poison gem"] = 98;
-			config["Hotkeys"]["Create Slowing gem"] = 99;
 			config["Hotkeys"]["MichaelsMagic: k"] = 75;
 			config["Hotkeys"]["MichaelsMagic: o"] = 79;
 			config["Hotkeys"]["MichaelsMagic: i"] = 73;
 			config["Hotkeys"]["MichaelsMagic: j"] = 74;
 			config["Hotkeys"]["MichaelsMagic: ;"] = 186;
 			config["Hotkeys"]["MichaelsMagic: '"] = 222;
-			config["Hotkeys"]["Up arrow function"] = 38;
-			config["Hotkeys"]["Down arrow function"] = 40;
-			config["Hotkeys"]["Left arrow function"] = 37;
-			config["Hotkeys"]["Right arrow function"] = 39;
 
 			return config;
 		}
@@ -478,16 +444,13 @@ package MichaelsMagic
 				else if (this.infoPanelState == InfoPanelState.BASEGAME)
 				{
 					this.infoPanelState = InfoPanelState.MICHAELSMAGIC;
-				event.eventArgs.continueDefault = false;
+					event.eventArgs.continueDefault = false;
 				}
 				else
 				{
 					this.infoPanelState = InfoPanelState.HIDDEN;
 				}
 			}
-			else
-			{
-			} 
 		}
 		
 		private function eh_ingameGemInfoPanelFormed(event:Object): void
@@ -497,11 +460,11 @@ package MichaelsMagic
 			var numberFormatter:Object = event.eventArgs.numberFormatter;
 			if (this.infoPanelState == InfoPanelState.MICHAELSMAGIC)
 			{
-				vIp.addExtraHeight(4);
+				vIp.addExtraHeight(8);
 				vIp.addSeparator(0);
-				vIp.addTextfield(15015015, "Michael's Magic", true, 13, [new GlowFilter(0, 1, 3, 6), new GlowFilter(16056320, 0.28, 25, 12)]);
-				vIp.addTextfield(15015015, replaceMode ? "Replace mode" : "Upgrade mode", true, 13, [new GlowFilter(0, 1, 3, 6), new GlowFilter(16056320, 0.28, 25, 12)]);
-				vIp.addTextfield(15015015, automatersEnabled ? "Automaters enabled" : "Automaters disabled", true, 13, [new GlowFilter(0, 1, 3, 6), new GlowFilter(16056320, 0.28, 25, 12)]);
+				vIp.addTextfield(1015015, "Michael's Magic", true, 13, [new GlowFilter(0, 1, 3, 6), new GlowFilter(11056320, 0.28, 25, 12)]);
+				vIp.addTextfield(1015015, replaceMode ? "Replace mode" : "Upgrade mode", true, 8);
+				vIp.addTextfield(1015015, automatersEnabled ? "Automaters enabled" : "Automaters disabled", true, 8);
 				var str:String = "";
 				str = automatersEnabled ? "j to disable automaters" : "j to enable automaters";
 				vIp.addTextfield(10526880, str, true, 7);
@@ -518,7 +481,7 @@ package MichaelsMagic
 				var vDmg:Number = Math.round(gem.sd5_EnhancedOrTrapOrLantern.damageMin.g() + 0.5 * (gem.sd5_EnhancedOrTrapOrLantern.damageMax.g() - gem.sd5_EnhancedOrTrapOrLantern.damageMin.g()));
 				vDmg = vDmg * (1 + gem.sd5_EnhancedOrTrapOrLantern.critHitMultiplier.g());
 				str = "Expected Damage: " + numberFormatter.format(vDmg);
-				vIp.addTextfield(10526880, str, true, 7);
+				vIp.addTextfield(16777215, str, true, 9);
 				vIp.addExtraHeight(6);
 			}
 		}
@@ -547,10 +510,10 @@ package MichaelsMagic
 		
 		private function addEventListeners(): void
 		{
-			bezel.addEventListener("ingamePreRenderInfoPanel", eh_ingamePreRenderInfoPanel);
+			//bezel.addEventListener("ingamePreRenderInfoPanel", eh_ingamePreRenderInfoPanel);
 			bezel.addEventListener("ingameGemInfoPanelFormed", eh_ingameGemInfoPanelFormed);
 			bezel.addEventListener("ingameKeyDown", eh_interceptKeyboardEvent_MichaelsMagic);
-			GV.main.stage.addEventListener(KeyboardEvent.KEY_DOWN, ehKeyboardInStageMenu, false, 0, true);
+			GV.main.stage.addEventListener(KeyboardEvent.KEY_DOWN, ehKeyboardInStageMenu);
 		}
 		
 		private function ehKeyboardInStageMenu(pE:KeyboardEvent): void
@@ -578,10 +541,10 @@ package MichaelsMagic
 		
 		private function removeEventListeners(): void
 		{
-			bezel.removeEventListener("ingamePreRenderInfoPanel", eh_ingamePreRenderInfoPanel);
+			//bezel.removeEventListener("ingamePreRenderInfoPanel", eh_ingamePreRenderInfoPanel);
 			bezel.removeEventListener("ingameGemInfoPanelFormed", eh_ingameGemInfoPanelFormed);
 			bezel.removeEventListener("ingameKeyDown", eh_interceptKeyboardEvent_MichaelsMagic);
-			GV.main.stage.removeEventListener(KeyboardEvent.KEY_DOWN, ehKeyboardInStageMenu, false);
+			GV.main.stage.removeEventListener(KeyboardEvent.KEY_DOWN, ehKeyboardInStageMenu);
 		}
 		
 		private function eh_ingamePreRenderInfoPanel(event:Object): void
@@ -592,137 +555,5 @@ package MichaelsMagic
 			}
 		}
 		
-		public static function format(pNum:Number, pDecimals:Number = 0, pForceZeroDecimals:Boolean = false) : String
-      {
-         var i:int = 0;
-         var vStr:String = null;
-         var vBeforeE:String = null;
-         var vAfterE:String = null;
-         var vIndexOfPoint:int = 0;
-         var vCharArray:Array = null;
-         var vDecimalsString:String = null;
-         var vCounter:Number = NaN;
-         var vDecimalsToChop:int = 0;
-         var vNoMoreChops:Boolean = false;
-         var vIsNegative:* = pNum < 0;
-         if(vIsNegative)
-         {
-            pNum = pNum * -1;
-         }
-         if(pNum >= 1000000000000)
-         {
-            vStr = pNum.toPrecision(!!false?8:4);
-         }
-         else
-         {
-            if(pDecimals > 0)
-            {
-               pNum = pNum * Math.pow(10,pDecimals);
-            }
-            vStr = Math.round(pNum).toString();
-         }
-         var vRetVal:String = "";
-         var vIndexOfE:int = vStr.indexOf("e");
-         if(vIndexOfE != -1)
-         {
-            vBeforeE = vStr.substring(0,vIndexOfE);
-            vAfterE = vStr.substring(vIndexOfE + 2);
-            vIndexOfPoint = vBeforeE.indexOf(".");
-            if(false)
-            {
-               if(vIndexOfPoint == -1)
-               {
-                  vRetVal = vBeforeE + ".0000000 e" + vAfterE;
-               }
-               else
-               {
-                  vRetVal = (vBeforeE + "0000000").substring(0,9) + " e" + vAfterE;
-               }
-            }
-            else if(vIndexOfPoint == -1)
-            {
-               vRetVal = vBeforeE + ".000 e" + vAfterE;
-            }
-            else
-            {
-               vRetVal = (vBeforeE + "000").substring(0,5) + " e" + vAfterE;
-            }
-         }
-         else
-         {
-            vCharArray = vStr.split("");
-            vDecimalsString = "";
-            if(pDecimals > 0)
-            {
-               for(i = 0; i < pDecimals; i++)
-               {
-                  if(vCharArray.length == 0)
-                  {
-                     vDecimalsString = "0" + vDecimalsString;
-                  }
-                  else
-                  {
-                     vDecimalsString = vCharArray.pop() + vDecimalsString;
-                  }
-               }
-            }
-            if(!pForceZeroDecimals)
-            {
-               vDecimalsToChop = 0;
-               vNoMoreChops = false;
-               for(i = vDecimalsString.length - 1; i >= 0; i--)
-               {
-                  if(!vNoMoreChops)
-                  {
-                     if(vDecimalsString.charAt(i) == "0")
-                     {
-                        vDecimalsToChop++;
-                     }
-                     else
-                     {
-                        vNoMoreChops = true;
-                     }
-                  }
-               }
-            }
-            if(vDecimalsToChop > 0)
-            {
-               vDecimalsString = vDecimalsString.substr(0,vDecimalsString.length - vDecimalsToChop);
-            }
-            vCounter = 0;
-            for(i = vCharArray.length - 1; i > 0; i--)
-            {
-               vCounter++;
-               if(vCounter == 3)
-               {
-                  vCharArray.splice(i,0,",");
-                  vCounter = 0;
-               }
-            }
-            if(vCharArray.length == 0)
-            {
-               vRetVal = "0";
-            }
-            else
-            {
-               for(i = 0; i < vCharArray.length; i++)
-               {
-                  vRetVal = vRetVal + vCharArray[i];
-               }
-            }
-            if(vIsNegative)
-            {
-               vRetVal = "-".concat(vRetVal);
-            }
-            if(pDecimals > 0)
-            {
-               if(vDecimalsString.length > 0)
-               {
-                  return vRetVal + "." + vDecimalsString;
-               }
-            }
-         }
-         return vRetVal;
-      }
    }
 }
