@@ -1,9 +1,9 @@
 # MichaelsMagic
-a GCFW mod that adds automaters to the game
+A GCFW mod that adds automaters to the game
 
 # Mod files
-all the files will be in the game's Local Store folder
-%appdata%\com.giab.games.gcfw.steam\Local Store\MichaelsMagic
+All the files are stored in the game's Local Store folder:
+`%appdata%\com.giab.games.gcfw.steam\Local Store\MichaelsMagic`
 
 ## Installing the mod
 ### Important warning! MichaelsMagic depends on [Bezel Mod Loader](https://github.com/gemforce-team/BezelModLoader).
@@ -15,31 +15,36 @@ all the files will be in the game's Local Store folder
 Delete `MichaelsMagic-x.x-for-y.y.y.swf` from the `Mods` folder.
 
 ## Releases
-[Link to the latest release](https://github.com/Skillcheese/MichaelsMagic/releases/latest)
+[Link to the latest release](https://github.com/gemforce-team/MichaelsMagic/releases/latest)
 
-Release history: [Releases](https://github.com/Skillcheese/MichaelsMagic/releases)
+Release history: [Releases](https://github.com/gemforce-team/MichaelsMagic/releases)
 
 ## Features
 This mod adds automaters to the game, which makes mana farming much less of a hastle.
+
 To begin, press k over a gem in a structure to create an automater there, these are free and you can have as many as you want.
+
 By default automaters are in upgrade mode, and will upgrade any gem which can be afforded, with priority governed by your amplifier skill giving higher priority to amplifiers targeting more things, as well as higher priority going to the structures with worse gems. The other mode is Replace mode, which allows you to gem weave to your heart's content on a gem, place it in the top right inventory slot, and the automaters will replace their held gems for that gem, again with priority as defined above.
+
 You can switch between these modes with alt + j.
-Also adds an expected damage to the bottom of gem tooltips.
+
+Also adds expected damage to the bottom of gem tooltips.
 
 ## Hotkeys
 By default MichaelsMagic's hotkeys are:
 ```
-- in the talisman menu -
+- In the talisman menu -
 k - create or destroy an automater on the structure under the mouse cursor (Trap, Tower, Amplifier, or Lantern) (You will know which structures have automaters based on the red * on top of them)
 alt + j - switch between upgrade and replace mode - defined above
 j - enable or disable automaters
 ```
 
 # Planned Ideas
-I eventually want this to fully automate shadow core/talisman farming, as well as to better automate gem weaving using the gemsmith mod.
+* Full automation of shadow core \ talisman fragment farming
+* Integration with gemsmith for gem weaving
 
 # Bug reports and feedback
-Please submit an issue to [The issue tracker](https://github.com/Skillcheese/MichaelsMagic/issues) if you encounter a bug and there isn't already an open issue about it.
+Please submit an issue to [The issue tracker](https://github.com/gemforce-team/MichaelsMagic/issues) if you encounter a bug and there isn't already an open issue about it.
 
 You can find me on GemCraft's Discord server: https://discord.gg/ftyaJhx - Skillcheese#2962
 
@@ -51,7 +56,6 @@ GemCraft - Frostborn Wrath is developed and owned by [gameinabottle](http://game
 
 
 # Credits
-MichaelsMagic is developed by Skillcheese
+Skillcheese - original developer
 
-
-# Hellrage, yes I stole your readme, ¯\_(ツ)_/¯
+Currently the mod is maintained by gemforce-team
