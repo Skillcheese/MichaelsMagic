@@ -12,7 +12,7 @@ package MichaelsMagic
     {
         public static const MM_VERSION:String = "1.3";
         public function get VERSION():String { return MM_VERSION; }
-		public function get BEZEL_VERSION():String { return "1.1.2"; }
+		public function get BEZEL_VERSION():String { return "2.0.0"; }
 		public function get MOD_NAME():String { return "MichaelsMagic"; }
 
         private var mm:GCFWMichaelsMagic;

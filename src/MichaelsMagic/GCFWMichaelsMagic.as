@@ -6,9 +6,9 @@ package MichaelsMagic
 	 */
 	
 	import Bezel.Bezel;
-	import Bezel.Events.EventTypes;
-	import Bezel.Events.IngameGemInfoPanelFormedEvent;
-	import Bezel.Events.IngameKeyDownEvent;
+	import Bezel.GCFW.Events.EventTypes;
+	import Bezel.GCFW.Events.IngameGemInfoPanelFormedEvent;
+	import Bezel.GCFW.Events.IngameKeyDownEvent;
 	import Bezel.Logger;
 	import Bezel.Utils.Keybind;
 	import Bezel.Utils.SettingManager;
@@ -442,5 +442,5 @@ package MichaelsMagic
 			bezel.removeEventListener("ingameKeyDown", eh_interceptKeyboardEvent_MichaelsMagic);
 		}
 		
-   }
+    }
 }
