@@ -351,24 +351,24 @@ package MichaelsMagic
 		// or stops the base game's handler
 		private function eh_interceptKeyboardEvent_MichaelsMagic(event: IngameKeyDownEvent): void
 		{
-			if (bezel.keybindManager.getHotkeyValue("MichaelsMagic: Spawn Automator").matches(event))
+			if (bezel.keybindManager.getHotkeyValue("MichaelsMagic: Spawn Automator").matches(event.eventArgs.event))
 			{
 				spawnAutomaterOnMouse();
 				event.eventArgs.continueDefault = false;
 			}
-			else if (bezel.keybindManager.getHotkeyValue("MichaelsMagic: Toggle Automators").matches(event))
+			else if (bezel.keybindManager.getHotkeyValue("MichaelsMagic: Toggle Automators").matches(event.eventArgs.event))
 			{
 				automatersEnabled = !automatersEnabled;
 				showMessage(automatersEnabled ? "Automaters turned on!" : "Automaters turned off!");
 				event.eventArgs.continueDefault = false;
 			}
-			else if (bezel.keybindManager.getHotkeyValue("MichaelsMagic: Toggle Replace/Upgrade Mode").matches(event))
+			else if (bezel.keybindManager.getHotkeyValue("MichaelsMagic: Toggle Replace/Upgrade Mode").matches(event.eventArgs.event))
 			{
 				replaceMode = !replaceMode;
 				showMessage(replaceMode ? "Automaters now in replace mode!" : "Automaters now in upgrade mode!");
 				event.eventArgs.continueDefault = false;
 			}
-			else if (bezel.keybindManager.getHotkeyValue("Show/hide info panels").matches(event))
+			else if (bezel.keybindManager.getHotkeyValue("Show/hide info panels").matches(event.eventArgs.event))
 			{
 				if (this.infoPanelState == InfoPanelState.HIDDEN)
 				{
