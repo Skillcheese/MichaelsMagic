@@ -1,7 +1,11 @@
 package MichaelsMagic 
 {
-	import MichaelsMagic.MichaelsMagic;
-	import flash.utils.getDefinitionByName;
+	import com.giab.games.gcfw.entity.Amplifier;
+	import com.giab.games.gcfw.entity.Gem;
+	import com.giab.games.gcfw.entity.Lantern;
+	import com.giab.games.gcfw.entity.Tower;
+	import com.giab.games.gcfw.entity.Trap;
+	import com.giab.games.gcfw.ingame.IngameCore;
 	/**
 	 * ...
 	 * @author Skillcheese
@@ -14,12 +18,12 @@ package MichaelsMagic
 		public var pX:Number;
 		public var pY:Number;
 		public var isDestroyed:Boolean = false;
-		private var core:Object = null;
-		private var mm:Object = null;
+		private var core:IngameCore = null;
+		private var mm:GCFWMichaelsMagic = null;
 		public var buildingType:int = -1;
 		public var numNeighbors:int = 0;
 		
-		public function Automater(coreRef:Object, mmRef:Object) 
+		public function Automater(coreRef:IngameCore, mmRef:GCFWMichaelsMagic) 
 		{
 			x = 0;
 			y = 0;
@@ -73,7 +77,7 @@ package MichaelsMagic
 			var building:Object = core.buildingAreaMatrix[y][x];
 			if (building != null)
 			{
-				var buildingGem:Object = building.insertedGem;
+				var buildingGem:Gem = building.insertedGem;
 				if (buildingGem != null)
 				{
 					if (!actuallyUpdate)
@@ -82,7 +86,7 @@ package MichaelsMagic
 					}
 					if (replace)
 					{
-						var gem:Object = core.inventorySlots[2];
+						var gem:Gem = core.inventorySlots[2];
 						if (gem != null)
 						{
 							if (areGemsDifferent(buildingGem, gem)) //check if gems are different
@@ -96,9 +100,9 @@ package MichaelsMagic
 									}
 									else
 									{
-										var gemToInsert:Object = core.inventorySlots[numSlot];
+										var gemToInsert:Gem = core.inventorySlots[numSlot];
 										core.spellCaster.castRefundGem(buildingGem);
-										if (core.gems.indexOf(buildingGem != -1))
+										if (core.gems.indexOf(buildingGem) != -1)
 										{
 											core.gems.splice(core.gems.indexOf(buildingGem), 1);
 										}
@@ -136,7 +140,7 @@ package MichaelsMagic
 			}
 		}
 		
-		private function areGemsDifferent(gemA:Object, gemB:Object): Boolean
+		private function areGemsDifferent(gemA:Gem, gemB:Gem): Boolean
 		{
 			if (gemA.cost.g() != gemB.cost.g() || gemA.grade.g() != gemB.grade.g())
 			{
@@ -230,10 +234,6 @@ package MichaelsMagic
 		{
 			if (building != null)
 			{
-				var Trap:Class = getDefinitionByName("com.giab.games.gcfw.entity.Trap") as Class;
-				var Tower:Class = getDefinitionByName("com.giab.games.gcfw.entity.Tower") as Class;
-				var Amplifier:Class = getDefinitionByName("com.giab.games.gcfw.entity.Amplifier") as Class;
-				var Lantern:Class = getDefinitionByName("com.giab.games.gcfw.entity.Lantern") as Class;
 				if (building is Trap)
 				{
 					return BuildingType.TRAP;

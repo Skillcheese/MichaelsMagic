@@ -5,50 +5,47 @@ package MichaelsMagic
 	 * @author Skillcheese
 	 */
 	
-	import flash.display.Bitmap;
-	import flash.display.MovieClip;
-	import flash.filesystem.*;
-	import flash.system.*;
-	import flash.events.*;
-	import flash.filters.GlowFilter;
-	import flash.net.*;
-	import MichaelsMagic.InfoPanelState;
+	import Bezel.Bezel;
+	import Bezel.GCFW.Events.EventTypes;
+	import Bezel.GCFW.Events.IngameGemInfoPanelFormedEvent;
+	import Bezel.GCFW.Events.IngameKeyDownEvent;
+	import Bezel.Logger;
+	import Bezel.Utils.Keybind;
+	import Bezel.Utils.SettingManager;
 	import MichaelsMagic.Automater;
 	import MichaelsMagic.BuildingType;
-	import flash.geom.Point;
+	import MichaelsMagic.InfoPanelState;
+	import com.giab.common.utils.NumberFormatter;
+	import com.giab.games.gcfw.GV;
+	import com.giab.games.gcfw.SB;
+	import com.giab.games.gcfw.constants.ActionStatus;
+	import com.giab.games.gcfw.constants.IngameStatus;
+	import com.giab.games.gcfw.entity.Gem;
+	import com.giab.games.gcfw.mcDyn.McInfoPanel;
 	import flash.events.Event;
 	import flash.events.TimerEvent;
-	import flash.text.ReturnKeyLabel;
+	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
+	import flash.filters.GlowFilter;
 	import flash.utils.Timer;
-	import flash.utils.getTimer;
-	import flash.utils.ByteArray;
 
 	// We extend MovieClip so that flash.display.Loader accepts our class
 	// The loader also requires a parameterless constructor (AFAIK), so we also have a .Bind method to bind our class to the game
-	public class MichaelsMagic extends MovieClip
+	public class GCFWMichaelsMagic
 	{
-		public const VERSION:String = "1.2";
-		public const GAME_VERSION:String = "1.1.0a";
-		public const BEZEL_VERSION:String = "0.2.1";
-		public const MOD_NAME:String = "MichaelsMagic";
-		
-		private var gameObjects:Object;
-		
-		// Game object shortcuts
-		private var core:Object;/*IngameCore*/
-		private var cnt:Object;/*CntIngame*/
-		public var GV:Object;/*GV*/
-		public var SB:Object;/*SB*/
-		public var prefs:Object;/*Prefs*/
+		public const GAME_VERSION:String = "1.2.1a";
 		
 		// Mod loader object
-		internal static var bezel:Object;
+		internal static var bezel:Bezel;
 		
-		internal static var logger:Object;
-		internal static var storage:File;
+		internal static var logger:Logger;
 
-		private var configuration:Object;
 		private var infoPanelState:int;
+
+		private var settings:SettingManager;
+
+		internal static var myStorage:File = File.applicationStorageDirectory.resolvePath("MichaelsMagic/");
 		
 		private var automaters:Array = new Array();
 		private var automatersEnabled:Boolean = false;
@@ -58,38 +55,35 @@ package MichaelsMagic
 		private var replaceMode:Boolean = false;
 		
 		// Parameterless constructor for flash.display.Loader
-		public function MichaelsMagic()
+		public function GCFWMichaelsMagic()
 		{
 			super();
 		}
 		
 		// This method binds the class to the game's objects
-		public function bind(modLoader:Object, gameObjects:Object) : MichaelsMagic
+		public function bind(modLoader:Bezel, gameObjects:Object) : void
 		{
 			bezel = modLoader;
 			logger = bezel.getLogger("MichaelsMagic");
-			storage = File.applicationStorageDirectory;
-			this.gameObjects = gameObjects;
-			this.core = gameObjects.GV.ingameCore;
-			this.cnt = gameObjects.GV.main.cntScreens.cntIngame;
-			this.SB = gameObjects.SB;
-			this.GV = gameObjects.GV;
-			this.prefs = gameObjects.prefs;
-			
-			prepareFoldersAndLogger();
-			this.configuration = createDefaultConfiguration();
+
+			if (!myStorage.exists)
+			{
+				myStorage.createDirectory();
+			}
+
+			bezel.keybindManager.registerHotkey("MichaelsMagic: Spawn Automator", new Keybind("k"));
+			bezel.keybindManager.registerHotkey("MichaelsMagic: Toggle Automators", new Keybind("j"));
+			bezel.keybindManager.registerHotkey("MichaelsMagic: Toggle Replace/Upgrade Mode", new Keybind("alt+j"));
 			this.infoPanelState = InfoPanelState.MICHAELSMAGIC;
 			
 			addEventListeners();
 			
 			logger.log("MichaelsMagic", "MichaelsMagic initialized!");
-			return this;
 		}
 		
 		private function saveSlot(slot:int): void
 		{
-			
-			var slotFile:File = storage.resolvePath("MichaelsMagic/MichaelsMagic_slot" + slot + ".json");
+			var slotFile:File = myStorage.resolvePath("MichaelsMagic_slot" + slot + ".json");
 			var slotStream:FileStream = new FileStream();
 			var slotObject:Object = null;
 			var slotJSON:String = null;
@@ -107,9 +101,7 @@ package MichaelsMagic
 			var array:Array = new Array();
 			for (var i:int = 0; i < automaters.length; i++)
 			{
-				array.push(new Object());
-				array[i].x = automaters[i].x;
-				array[i].y = automaters[i].y;
+				array.push({"x":automaters[i].x, "y":automaters[i].y});
 			}
 			r.array = array;
 			return r;
@@ -117,7 +109,7 @@ package MichaelsMagic
 
 		private function loadSlot(slot:int): void
 		{
-			var slotFile:File = storage.resolvePath("MichaelsMagic/MichaelsMagic_slot" + slot + ".json");
+			var slotFile:File = myStorage.resolvePath("MichaelsMagic_slot" + slot + ".json");
 			var slotStream:FileStream = new FileStream();
 			var slotObject:Object = null;
 			var slotJSON:String = null;
@@ -150,7 +142,7 @@ package MichaelsMagic
 					automaters = new Array();
 					for (var i:int = 0; i < slotObject.array.length; i++)
 					{
-						var automater:Automater = new Automater(core, this);
+						var automater:Automater = new Automater(GV.ingameCore, this);
 						automater.x = slotObject.array[i].x;
 						automater.y = slotObject.array[i].y;
 						automaters.push(automater);
@@ -158,59 +150,44 @@ package MichaelsMagic
 				}
 			}
 		}
-
-		private function createDefaultConfiguration(): Object
-		{
-			var config:Object = new Object();
-			config["Hotkeys"] = new Object();
-			config["Hotkeys"]["Show/hide info panels"] = 190;
-			config["Hotkeys"]["MichaelsMagic: k"] = 75;
-			config["Hotkeys"]["MichaelsMagic: o"] = 79;
-			config["Hotkeys"]["MichaelsMagic: i"] = 73;
-			config["Hotkeys"]["MichaelsMagic: j"] = 74;
-			config["Hotkeys"]["MichaelsMagic: ;"] = 186;
-			config["Hotkeys"]["MichaelsMagic: '"] = 222;
-
-			return config;
-		}
 		
 		private function spawnAutomaterOnMouse(): void
 		{
-			if(this.core.actionStatus == 106)
+			if(GV.ingameCore.actionStatus == ActionStatus.CAST_GEMBOMB_INITIATED)
 			{
-				this.core.controller.deselectEverything(true,false);
+				GV.ingameCore.controller.deselectEverything(true,false);
 			}
 			try
 			{
 				// ACTIONSTATUS enums are sadly not available yet
 				if(GV.ingameCore.actionStatus < 300 || GV.ingameCore.actionStatus >= 600)
 				{
-					var gem:Object/*Gem*/ = this.core.controller.getGemUnderPointer(false);
+					var gem:Gem = GV.ingameCore.controller.getGemUnderPointer(false);
 					if (gem != null)
 					{
 						var selectedBuilding:Object = null;
-						if (core.selectedTower != null)
+						if (GV.ingameCore.selectedTower != null)
 						{
-							selectedBuilding = core.selectedTower;
+							selectedBuilding = GV.ingameCore.selectedTower;
 						}
-						else if (core.selectedTrap != null)
+						else if (GV.ingameCore.selectedTrap != null)
 						{
-							selectedBuilding = core.selectedTrap;
+							selectedBuilding = GV.ingameCore.selectedTrap;
 						}
-						else if (core.selectedAmplifier != null)
+						else if (GV.ingameCore.selectedAmplifier != null)
 						{
-							selectedBuilding = core.selectedAmplifier;
+							selectedBuilding = GV.ingameCore.selectedAmplifier;
 						}
-						else if (core.selectedLantern != null)
+						else if (GV.ingameCore.selectedLantern != null)
 						{
-							selectedBuilding = core.selectedLantern;
+							selectedBuilding = GV.ingameCore.selectedLantern;
 						}
 						if (selectedBuilding != null)
 						{
-							var x:Number = Math.round(cnt.root.mouseX);
-							var y:Number = Math.round(cnt.root.mouseY);
+							var x:Number = Math.round(GV.main.cntScreens.cntIngame.root.mouseX);
+							var y:Number = Math.round(GV.main.cntScreens.cntIngame.root.mouseY);
 							
-							var automater:Automater = new Automater(core, this);
+							var automater:Automater = new Automater(GV.ingameCore, this);
 							var automaterX:Number = Math.floor((x - 50) / 28);
 							var automaterY:Number = Math.floor((y - 8) / 28);
 							
@@ -264,7 +241,7 @@ package MichaelsMagic
 		private function renderAutomaters(): void
 		{
 			renderingAutomaters = true;
-			if (core.ingameStatus == 5 || core.ingameStatus == 14)
+			if (GV.ingameCore.ingameStatus == IngameStatus.PLAYING || GV.ingameCore.ingameStatus == IngameStatus.PLAYING_SHRINE_ACTIVE)
 			{
 				for each(var automater:Automater in automaters)
 				{
@@ -285,7 +262,7 @@ package MichaelsMagic
 		
 		private function updateAutomaters(): void
 		{
-			if (core.ingameStatus != 5 && core.ingameStatus != 14)
+			if (GV.ingameCore.ingameStatus != IngameStatus.PLAYING && GV.ingameCore.ingameStatus != IngameStatus.PLAYING_SHRINE_ACTIVE)
 			{
 				automaters = new Array();
 				automatersEnabled = false;
@@ -305,7 +282,7 @@ package MichaelsMagic
 					{
 						if (!automater.isDestroyed)
 						{
-							if (core.getMana() < automater.getGemCost() + core.gemCombiningManaCost.g())
+							if (GV.ingameCore.getMana() < automater.getGemCost() + GV.ingameCore.gemCombiningManaCost.g())
 							{
 								finished = true;
 								break;
@@ -336,7 +313,7 @@ package MichaelsMagic
 			{
 				return 0;
 			}
-			var specRatio: Number = 0.15 + core.skillEffectiveValues[19][1].g(); //SkillId.AMPLIFIERS = 19
+			var specRatio: Number = 0.15 + GV.ingameCore.skillEffectiveValues[19][1].g(); //SkillId.AMPLIFIERS = 19
 			var aDesiredCostRatio:Number = Math.pow(specRatio * a.numNeighbors, 1.868); // [1 / (1 - log(1.38) / log(2))]
 			var bDesiredCostRatio:Number = Math.pow(specRatio * b.numNeighbors, 1.868); // [1 / (1 - log(1.38) / log(2))]
 			var aTotal:Number = aIsAmp ? aDesiredCostRatio : 1;
@@ -372,70 +349,26 @@ package MichaelsMagic
 		// 2 - Substitutes the KeyCode from Gemsmith_config.json
 		// Then it either lets the base game handler to run (so it then fires the function with the substituted KeyCode)
 		// or stops the base game's handler
-		private function eh_interceptKeyboardEvent_MichaelsMagic(event: Object): void
+		private function eh_interceptKeyboardEvent_MichaelsMagic(event: IngameKeyDownEvent): void
 		{
-			var pE:KeyboardEvent = event.eventArgs.event;
-
-			if(pE.keyCode == this.configuration["Hotkeys"]["MichaelsMagic: k"])
+			if (bezel.keybindManager.getHotkeyValue("MichaelsMagic: Spawn Automator").matches(event.eventArgs.event))
 			{
-				if (pE.altKey) 
-				{
-					
-				}
-				else 
-				{
-					spawnAutomaterOnMouse();
-				}
+				spawnAutomaterOnMouse();
 				event.eventArgs.continueDefault = false;
 			}
-			else if(pE.keyCode == this.configuration["Hotkeys"]["MichaelsMagic: j"])
+			else if (bezel.keybindManager.getHotkeyValue("MichaelsMagic: Toggle Automators").matches(event.eventArgs.event))
 			{
-				if (pE.altKey)
-				{
-					replaceMode = !replaceMode;
-					showMessage(replaceMode ? "Automaters now in replace mode!" : "Automaters now in upgrade mode!");
-				}
-				else
-				{
-					if (automatersEnabled)
-					{
-						showMessage("Automaters turned off!");
-						automatersEnabled = false;
-					}
-					else
-					{
-						showMessage("Automaters turned on!");
-						automatersEnabled = true;
-					}
-				}
+				automatersEnabled = !automatersEnabled;
+				showMessage(automatersEnabled ? "Automaters turned on!" : "Automaters turned off!");
 				event.eventArgs.continueDefault = false;
 			}
-			else if(pE.keyCode == this.configuration["Hotkeys"]["MichaelsMagic: i"])
+			else if (bezel.keybindManager.getHotkeyValue("MichaelsMagic: Toggle Replace/Upgrade Mode").matches(event.eventArgs.event))
 			{
+				replaceMode = !replaceMode;
+				showMessage(replaceMode ? "Automaters now in replace mode!" : "Automaters now in upgrade mode!");
 				event.eventArgs.continueDefault = false;
 			}
-			else if (pE.keyCode == this.configuration["Hotkeys"]["MichaelsMagic: ;"])
-			{
-				/*
-				automatersIndex++;
-				if (automatersIndex >= automaters.length)
-				{
-					showMessage("Creating a new automaterGroup!");
-				}
-				*/
-				event.eventArgs.continueDefault = false;
-			}
-			else if (pE.keyCode == this.configuration["Hotkeys"]["MichaelsMagic: '"])
-			{
-				
-				event.eventArgs.continueDefault = false;
-			}
-			else if (pE.keyCode == this.configuration["Hotkeys"]["MichaelsMagic: o"])
-			{
-				
-				event.eventArgs.continueDefault = false;
-			}
-			else if(pE.keyCode == this.configuration["Hotkeys"]["Show/hide info panels"])
+			else if (bezel.keybindManager.getHotkeyValue("Show/hide info panels").matches(event.eventArgs.event))
 			{
 				if (this.infoPanelState == InfoPanelState.HIDDEN)
 				{
@@ -453,11 +386,10 @@ package MichaelsMagic
 			}
 		}
 		
-		private function eh_ingameGemInfoPanelFormed(event:Object): void
+		private function eh_ingameGemInfoPanelFormed(event:IngameGemInfoPanelFormedEvent): void
 		{
-			var vIp:Object = event.eventArgs.infoPanel;
-			var gem:Object = event.eventArgs.gem;
-			var numberFormatter:Object = event.eventArgs.numberFormatter;
+			var vIp:McInfoPanel = event.eventArgs.infoPanel as McInfoPanel;
+			var gem:Gem = event.eventArgs.gem as Gem;
 			if (this.infoPanelState == InfoPanelState.MICHAELSMAGIC)
 			{
 				vIp.addExtraHeight(8);
@@ -470,9 +402,9 @@ package MichaelsMagic
 				vIp.addTextfield(10526880, str, true, 7);
 				str = "k to create or destroy an automater!";
 				vIp.addTextfield(10526880, str, true, 7);
-				if (gem != null && core.inventorySlots[2] != null)
+				if (gem != null && GV.ingameCore.inventorySlots[2] != null)
 				{
-					if (gem == core.inventorySlots[2])
+					if (gem == GV.ingameCore.inventorySlots[2])
 					{
 						str = replaceMode ? "alt + j to switch to upgrade mode" : "alt + j to switch to replace mode with this gem";
 						vIp.addTextfield(10526880, str, true, 7);
@@ -480,56 +412,21 @@ package MichaelsMagic
 				}
 				var vDmg:Number = Math.round(gem.sd5_EnhancedOrTrapOrLantern.damageMin.g() + 0.5 * (gem.sd5_EnhancedOrTrapOrLantern.damageMax.g() - gem.sd5_EnhancedOrTrapOrLantern.damageMin.g()));
 				vDmg = vDmg * (1 + gem.sd5_EnhancedOrTrapOrLantern.critHitMultiplier.g());
-				str = "Expected Damage: " + numberFormatter.format(vDmg);
+				str = "Expected Damage: " + NumberFormatter.format(vDmg);
 				vIp.addTextfield(16777215, str, true, 9);
 				vIp.addExtraHeight(6);
 			}
 		}
 		
-		private function prepareFoldersAndLogger(): void
-		{
-			var storageFolder:File = storage.resolvePath("MichaelsMagic");
-			if (!storageFolder.isDirectory)
-			{
-				logger.log("PrepareFolders", "Creating ./MichaelsMagic");
-				storageFolder.createDirectory();
-			}
-		}
-		
-		public function reloadEverything(): void
-		{
-			this.configuration = createDefaultConfiguration();
-			GV.vfxEngine.createFloatingText4(GV.main.mouseX,GV.main.mouseY < 60?Number(GV.main.mouseY + 30):Number(GV.main.mouseY - 20),"Reloaded config!",99999999,20,"center",0,0,0,0,24,0,1000);
-			SB.playSound("sndalert");
-		}
-		
 		public function prettyVersion(): String
 		{
-			return 'v' + VERSION + ' for ' + GAME_VERSION;
+			return 'v' + MichaelsMagicMod.MM_VERSION + ' for ' + GAME_VERSION;
 		}
 		
 		private function addEventListeners(): void
 		{
-			//bezel.addEventListener("ingamePreRenderInfoPanel", eh_ingamePreRenderInfoPanel);
-			bezel.addEventListener("ingameGemInfoPanelFormed", eh_ingameGemInfoPanelFormed);
-			bezel.addEventListener("ingameKeyDown", eh_interceptKeyboardEvent_MichaelsMagic);
-			GV.main.stage.addEventListener(KeyboardEvent.KEY_DOWN, ehKeyboardInStageMenu);
-		}
-		
-		private function ehKeyboardInStageMenu(pE:KeyboardEvent): void
-		{
-			if (pE.keyCode == 33) //page up
-			{
-				
-			}
-			if (pE.keyCode == 34) // page down
-			{
-				
-			}
-			if (pE.keyCode == 75) // k
-			{
-				
-			}
+			bezel.addEventListener(EventTypes.INGAME_GEM_INFO_PANEL_FORMED, eh_ingameGemInfoPanelFormed);
+			bezel.addEventListener(EventTypes.INGAME_KEY_DOWN, eh_interceptKeyboardEvent_MichaelsMagic);
 		}
 		
 		public function unload(): void
@@ -541,19 +438,9 @@ package MichaelsMagic
 		
 		private function removeEventListeners(): void
 		{
-			//bezel.removeEventListener("ingamePreRenderInfoPanel", eh_ingamePreRenderInfoPanel);
 			bezel.removeEventListener("ingameGemInfoPanelFormed", eh_ingameGemInfoPanelFormed);
 			bezel.removeEventListener("ingameKeyDown", eh_interceptKeyboardEvent_MichaelsMagic);
-			GV.main.stage.removeEventListener(KeyboardEvent.KEY_DOWN, ehKeyboardInStageMenu);
 		}
 		
-		private function eh_ingamePreRenderInfoPanel(event:Object): void
-		{
-			for each (var automater:Automater in automaters)
-			{
-				
-			}
-		}
-		
-   }
+    }
 }
